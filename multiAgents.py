@@ -136,40 +136,39 @@ class MultiAgentSearchAgent(Agent):
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
         self.actions = {}
+        self.whichAgent = 0
 
 class MinimaxAgent(MultiAgentSearchAgent):
     """
     Your minimax agent (question 2)
     """
     def minimax(self,gameState,height,agent,previousAction):
-        if gameState.isWin() or gameState.isLose():
+        if gameState.isWin() or gameState.isLose() and height < self.depth:
             #self.actions[self.evaluationFunction(gameState)] = previousAction
             return self.evaluationFunction(gameState)
         nextAgent = (agent + 1) % gameState.getNumAgents()
         if height == self.depth:
+            self.whichAgent = agent
             if agent == 0:
-                minUtility = -9999
-                minAction = None
-                for action in gameState.getLegalActions(nextAgent):
-                    if self.evaluationFunction(gameState.generateSuccessor(nextAgent,action)) > minUtility:
-                        minUtility = self.evaluationFunction(gameState.generateSuccessor(nextAgent,action))
-                        minAction = action
-                #self.actions[minUtility] = minAction
-                return minUtility
-
-                #return min(self.evaluationFunction(gameState.generateSuccessor(nextAgent,action)) for action in gameState.getLegalActions(nextAgent))
-            else:
-                maxUtility = 9999
+                maxUtility = -9999
                 maxAction = None
                 for action in gameState.getLegalActions(nextAgent):
-                    if self.evaluationFunction(gameState.generateSuccessor(nextAgent,action)) < maxUtility:
+                    if self.evaluationFunction(gameState.generateSuccessor(nextAgent,action)) > maxUtility:
                         maxUtility = self.evaluationFunction(gameState.generateSuccessor(nextAgent,action))
                         maxAction = action
-                #self.actions[maxUtility] = maxAction
+                #self.actions[minUtility] = minAction
                 return maxUtility
-                #return max(self.evaluationFunction(gameState.generateSuccessor(nextAgent,action)) for action in gameState.getLegalActions(nextAgent))
+
+            else:
+                minUtility = 9999
+                minAction = None
+                for action in gameState.getLegalActions(nextAgent):
+                    if self.evaluationFunction(gameState.generateSuccessor(nextAgent,action)) < minUtility:
+                        minUtility = self.evaluationFunction(gameState.generateSuccessor(nextAgent,action))
+                        minAction = action
+                #self.actions[maxUtility] = maxAction
+                return minUtility
         if nextAgent == 0:
-            #return min(self.minimax(gameState.generateSuccessor(nextAgent,action),height+1,nextAgent,action) for action in gameState.getLegalActions(nextAgent))
             minimum = 9999
             bestAction = None
             for action in gameState.getLegalActions(nextAgent):
@@ -177,19 +176,32 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 if check < minimum:
                     minimum = check
                     bestAction = action
-            self.actions[minimum] = bestAction
+            #if height == 0:
+            #    self.actions[minimum] = bestAction
             return minimum
         else:
-            #return max(self.minimax(gameState.generateSuccessor(nextAgent,action),height+1,nextAgent,action) for action in gameState.getLegalActions(nextAgent))
-            maximum = -9999
-            best = None
-            for action in gameState.getLegalActions(nextAgent):
-                check = self.minimax(gameState.generateSuccessor(nextAgent,action),height+1,nextAgent,action)
-                if check > maximum:
-                    maximum = check
-                    best = action
-            self.actions[maximum] = best
-            return maximum
+            if agent == 0:
+                maximum = -9999
+                best = None
+                for action in gameState.getLegalActions(nextAgent):
+                    check = self.minimax(gameState.generateSuccessor(nextAgent,action),height,nextAgent,action)
+                    if check > maximum:
+                        maximum = check
+                        best = action
+                if height == 0:
+                    self.actions[maximum] = best
+                return maximum
+            else:
+                minimum = 9999
+                bestAction = None
+                for action in gameState.getLegalActions(nextAgent):
+                    check = self.minimax(gameState.generateSuccessor(nextAgent,action),height,nextAgent,action)
+                    if check < minimum:
+                        minimum = check
+                        bestAction = action
+                #if height == 0:
+                #    self.actions[minimum] = bestAction
+                return minimum
 
     def getAction(self, gameState):
         """
@@ -216,8 +228,14 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         action = self.minimax(gameState,0,0,gameState.getLegalActions(0)[0])
-        print(self.actions)
-        return self.actions[action]
+        print('min value',min(self.actions))
+        print('min action',self.actions[min(self.actions)])
+        print('max value',max(self.actions))
+        print('max action',self.actions[max(self.actions)])
+        if self.whichAgent == 0:
+            return self.actions[max(self.actions)]
+        else:
+            return self.actions[min(self.actions)]
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
