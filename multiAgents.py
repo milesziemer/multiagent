@@ -142,49 +142,29 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
     Your minimax agent (question 2)
     """
-    def minimax(self,gameState,height,agent,previousAction):
-        if gameState.isWin() or gameState.isLose() and height < self.depth:
-            #self.actions[self.evaluationFunction(gameState)] = previousAction
+    def minimax(self,gameState,height,agent):
+        if gameState.isWin() or gameState.isLose():
             return self.evaluationFunction(gameState)
+
         nextAgent = (agent + 1) % gameState.getNumAgents()
         if height == self.depth:
-            self.whichAgent = agent
-            if agent == 0:
-                maxUtility = -9999
-                maxAction = None
-                for action in gameState.getLegalActions(nextAgent):
-                    if self.evaluationFunction(gameState.generateSuccessor(nextAgent,action)) > maxUtility:
-                        maxUtility = self.evaluationFunction(gameState.generateSuccessor(nextAgent,action))
-                        maxAction = action
-                #self.actions[minUtility] = minAction
-                return maxUtility
+            return self.evaluationFunction(gameState)
 
-            else:
-                minUtility = 9999
-                minAction = None
-                for action in gameState.getLegalActions(nextAgent):
-                    if self.evaluationFunction(gameState.generateSuccessor(nextAgent,action)) < minUtility:
-                        minUtility = self.evaluationFunction(gameState.generateSuccessor(nextAgent,action))
-                        minAction = action
-                #self.actions[maxUtility] = maxAction
-                return minUtility
         if nextAgent == 0:
             minimum = 9999
             bestAction = None
-            for action in gameState.getLegalActions(nextAgent):
-                check = self.minimax(gameState.generateSuccessor(nextAgent,action),height+1,nextAgent,action)
+            for action in gameState.getLegalActions(agent):
+                check = self.minimax(gameState.generateSuccessor(agent,action),height+1,nextAgent)
                 if check < minimum:
                     minimum = check
                     bestAction = action
-            #if height == 0:
-            #    self.actions[minimum] = bestAction
             return minimum
         else:
             if agent == 0:
                 maximum = -9999
                 best = None
-                for action in gameState.getLegalActions(nextAgent):
-                    check = self.minimax(gameState.generateSuccessor(nextAgent,action),height,nextAgent,action)
+                for action in gameState.getLegalActions(agent):
+                    check = self.minimax(gameState.generateSuccessor(agent,action),height,nextAgent)
                     if check > maximum:
                         maximum = check
                         best = action
@@ -194,13 +174,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
             else:
                 minimum = 9999
                 bestAction = None
-                for action in gameState.getLegalActions(nextAgent):
-                    check = self.minimax(gameState.generateSuccessor(nextAgent,action),height,nextAgent,action)
+                for action in gameState.getLegalActions(agent):
+                    check = self.minimax(gameState.generateSuccessor(agent,action),height,nextAgent)
                     if check < minimum:
                         minimum = check
                         bestAction = action
-                #if height == 0:
-                #    self.actions[minimum] = bestAction
                 return minimum
 
     def getAction(self, gameState):
@@ -217,7 +195,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.generateSuccessor(agentIndex, action):
         Returns the successor game state after an agent takes an action
 
-        gameState.getNumAgents():
+        gameState
+.getNumAgents():
         Returns the total number of agents in the game
 
         gameState.isWin():
@@ -227,15 +206,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        action = self.minimax(gameState,0,0,gameState.getLegalActions(0)[0])
-        print('min value',min(self.actions))
-        print('min action',self.actions[min(self.actions)])
-        print('max value',max(self.actions))
-        print('max action',self.actions[max(self.actions)])
-        if self.whichAgent == 0:
-            return self.actions[max(self.actions)]
-        else:
-            return self.actions[min(self.actions)]
+        self.actions = {}
+        self.minimax(gameState,0,0)
+        return self.actions[max(self.actions)]
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
